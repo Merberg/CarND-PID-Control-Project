@@ -2,44 +2,70 @@
 #define PID_H
 
 class PID {
-public:
+ protected:
+
   /*
-  * Errors
-  */
+   * Errors
+   */
   double p_error;
   double i_error;
   double d_error;
 
   /*
-  * Coefficients
-  */ 
-  double Kp;
-  double Ki;
-  double Kd;
+   * Coefficients
+   */
+  static const int N_COEFFICIENTS = 3;
+  double Ks[N_COEFFICIENTS];
+  const int idxP;
+  const int idxI;
+  const int idxD;
 
   /*
-  * Constructor
-  */
-  PID();
+   * Tuning members
+   */
+  enum TuningStates_s {
+    Add,
+    Subtract,
+    Complete
+  };
+  bool isTuning;
+  TuningStates_s tuningState;
+  int idxTuning;
+  const int N_TUNING_COEFFS;
+  const double TUNING_CTE_TRIGGER;
+  const double TUNING_CTE_THRESHOLD;
+  const int TUNING_SETTLE_COUNTS;
+  int tuningCounter;
+  double cte_best;
+  double dKs[N_COEFFICIENTS];
 
   /*
-  * Destructor.
-  */
+   * Tune the PID coefficients using Coordinate Ascent/Twiddle
+   */
+  void Tune(double cte);
+  void TuneEnterAddBestErr(double cte);
+  void TuneEnterAdd();
+  void TuneEnterSubtract();
+
+ public:
+  /*
+   * Constructor
+   */
+  PID(double kp, double ki, double kd);
+
+  /*
+   * Destructor.
+   */
   virtual ~PID();
 
   /*
-  * Initialize PID.
-  */
-  void Init(double Kp, double Ki, double Kd);
-
-  /*
-  * Update the PID error variables given cross track error.
-  */
+   * Update the PID error variables given cross track error.
+   */
   void UpdateError(double cte);
 
   /*
-  * Calculate the total PID error.
-  */
+   * Calculate the total PID error.
+   */
   double TotalError();
 };
 
