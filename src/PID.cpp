@@ -19,11 +19,11 @@ PID::PID(double kp, double ki, double kd)
       tuningState(Add),
       idxTuning(0),
       N_TUNING_COEFFS(2),
-      TUNING_CTE_TRIGGER(3.0),
+      TUNING_CTE_TRIGGER(4),
       TUNING_CTE_THRESHOLD(0.00001),
-      TUNING_SETTLE_COUNTS(5),
-      tuningCounter(0),
-      cte_best(TUNING_CTE_TRIGGER)
+      counter(0),
+      cte_best(10),
+      cte_prev(10)
 {
   Ks[idxP] = kp;
   Ks[idxI] = ki;
@@ -55,8 +55,10 @@ double PID::TotalError()
 
 void PID::Tune(double cte)
 {
+  double cte_abs = fabs(cte);
+
   //Check first for done
-  if (fabs(cte) <= TUNING_CTE_THRESHOLD) {
+  if (cte_abs <= TUNING_CTE_THRESHOLD) {
     cout << endl;
     cout << "Tuning Complete P:" << Ks[idxP] << " I:" << Ks[idxI] << " D:"
          << Ks[idxD] << endl;
@@ -65,17 +67,17 @@ void PID::Tune(double cte)
     return;
   }
   //Otherwise run the twiddle states
-  if ((tuningCounter > TUNING_SETTLE_COUNTS)
-      || (fabs(cte) > TUNING_CTE_TRIGGER)) {
-    if (fabs(cte) < cte_best) {
-      TuneEnterAddBestErr(cte);
+  counter = (cte_abs > cte_prev) ? counter + 1 : 0;
+  cte_prev = cte_abs;
+  if (counter > TUNING_CTE_TRIGGER){
+    if (cte_abs < cte_best) {
+      TuneEnterAddBestErr(cte_abs);
     } else if (tuningState == Add) {
       TuneEnterSubtract();
     } else {
       TuneEnterAdd();
     }
-  } else {
-    tuningCounter++;
+    counter = 0;
   }
 }
 
@@ -88,7 +90,6 @@ void PID::TuneEnterAddBestErr(double cte)
   dKs[idxTuning] *= 1.1;
   idxTuning = (idxTuning + 1) % N_TUNING_COEFFS;
   Ks[idxTuning] += dKs[idxTuning];
-  tuningCounter = 0;
   tuningState = Add;
 }
 
@@ -101,7 +102,6 @@ void PID::TuneEnterAdd()
   dKs[idxTuning] *= 0.9;
   idxTuning = (idxTuning + 1) % N_TUNING_COEFFS;
   Ks[idxTuning] += dKs[idxTuning];
-  tuningCounter = 0;
   tuningState = Add;
 }
 
@@ -111,6 +111,5 @@ void PID::TuneEnterSubtract()
   cout << endl;
   cout << idxTuning << " enter -: " << dKs[idxTuning] << endl;
   Ks[idxTuning] -= 2 * dKs[idxTuning];
-  tuningCounter = 0;
   tuningState = Subtract;
 }

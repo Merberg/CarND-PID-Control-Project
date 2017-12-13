@@ -32,11 +32,11 @@ class PID {
   TuningStates_s tuningState;
   int idxTuning;
   const int N_TUNING_COEFFS;
-  const double TUNING_CTE_TRIGGER;
+  const int TUNING_CTE_TRIGGER;
   const double TUNING_CTE_THRESHOLD;
-  const int TUNING_SETTLE_COUNTS;
-  int tuningCounter;
+  int counter;
   double cte_best;
+  double cte_prev;
   double dKs[N_COEFFICIENTS];
 
   /*
