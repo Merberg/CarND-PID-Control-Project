@@ -42,10 +42,13 @@ int main(int argc, char *argv[])
   uWS::Hub h;
 
   // Create the pid variable.
-  double Kp_init = 0;
-  double Ki_init = 0.01;
-  double Kd_init = 0;
+  double Kp_init = -0.16; //Use atof(argv[1]) to tune
+  double Ki_init = 0.000005; //Use atof(argv[2]) to tune
+  double Kd_init = -1.0; //Use atof(argv[3]) to tune
   PID pid = PID(Kp_init, Ki_init, Kd_init);
+
+  // DEBUG
+  std::cout << "CTE, Steering Value" << std::endl;
 
   h.onMessage(
       [&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
@@ -74,13 +77,12 @@ int main(int argc, char *argv[])
               steer_value = pid.TotalError();
 
               // DEBUG
-              std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
+              std::cout << cte << ","<< steer_value << std::endl;
 
               json msgJson;
               msgJson["steering_angle"] = steer_value;
               msgJson["throttle"] = 0.3;
               auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-              std::cout << msg << std::endl;
               ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
             }
           } else {
