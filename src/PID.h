@@ -14,38 +14,9 @@ class PID {
   /*
    * Coefficients
    */
-  static const int N_COEFFICIENTS = 3;
-  double Ks[N_COEFFICIENTS];
-  const int idxP;
-  const int idxI;
-  const int idxD;
-
-  /*
-   * Tuning members
-   */
-  enum TuningStates_s {
-    Add,
-    Subtract,
-    Complete
-  };
-  bool isTuning;
-  TuningStates_s tuningState;
-  int idxTuning;
-  const int N_TUNING_COEFFS;
-  const int TUNING_CTE_TRIGGER;
-  const double TUNING_CTE_THRESHOLD;
-  int counter;
-  double cte_best;
-  double cte_prev;
-  double dKs[N_COEFFICIENTS];
-
-  /*
-   * Tune the PID coefficients using Coordinate Ascent/Twiddle
-   */
-  void Tune(double cte);
-  void TuneEnterAddBestErr(double cte);
-  void TuneEnterAdd();
-  void TuneEnterSubtract();
+  double Kp;
+  double Ki;
+  double Kd;
 
  public:
   /*
